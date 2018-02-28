@@ -3,4 +3,3 @@ setlocal formatoptions=croql
 
 " Fold on indents
 set foldmethod=indent
-
