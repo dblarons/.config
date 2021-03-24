@@ -1,5 +1,11 @@
 call plug#begin('~/.local/share/nvim/plugged')
 
+" Typescript syntax errors
+Plug 'mhartington/nvim-typescript', { 'do': './install.sh' }
+
+" Typescript highlighting
+Plug 'HerringtonDarkholme/yats.vim'
+
 " Solarized theme
 Plug 'iCyMind/NeoSolarized'
 
@@ -69,10 +75,19 @@ Plug 'vim-airline/vim-airline'
 " Airline themes
 Plug 'vim-airline/vim-airline-themes'
 
+" Nginx syntax highlighting
+Plug 'chr4/nginx.vim'
+
+" OpenSCAD syntax highlighting
+Plug 'sirtaj/vim-openscad'
+
 call plug#end()
 
 colorscheme NeoSolarized
 set background=dark
+
+" Turn off folding by default
+set nofoldenable
 
 "Write the old file out when switching between files.
 set autowrite
@@ -167,15 +182,6 @@ nmap <space> :
 "Copying in Vim copies to system clipboard
 set clipboard=unnamed
 
-"Map folding/unfolding of individual section from za to ,a
-nmap <leader>f za
-
-"Toggle all folds beneath this point
-nmap <leader>F zA
-
-"Toggle foldeable on and off
-nmap <leader>i zi
-
 " More useful command-line completion
 set wildmenu
 
@@ -237,12 +243,15 @@ nmap <leader>n :NERDTreeFind<CR>
 " Close NERDTree upon opening a file
 let NERDTreeQuitOnOpen=1
 
+" Show dotfiles
+let NERDTreeShowHidden=1
+
 " Ignore files in NERDTree viewer
 let NERDTreeIgnore = ['\.pyc$']
 
 " Needed for closetag.vim plugin
 " filenames like *.xml, *.html, *.xhtml, ...
-let g:closetag_filenames = "*.html,*.xhtml,*.xml,*.jsx"
+let g:closetag_filenames = "*.html,*.xhtml,*.xml,*.jsx,*.tsx"
 
 " Make ag.vim search from the project root instead of working dir
 let g:ag_working_path_mode="r"
@@ -263,10 +272,35 @@ autocmd BufWritePre * :call <SID>StripTrailingWhitespaces()
 
 nnoremap <C-p> :FZF<cr>
 
+let g:ale_linter_aliases = {
+\   'typescriptreact': 'typescript',
+\}
+
 " Only use the autopep8 linter
 let g:ale_linters = {
 \   'python': ['autopep8'],
+\   'typescript': ['tslint', 'tsserver'],
+\   'typescriptreact': ['tslint', 'tsserver'],
 \}
+
+let g:ale_fixer_aliases = {
+\   'typescriptreact': 'typescript',
+\}
+
+let g:ale_fixers = {
+\   'typescript': ['prettier'],
+\   'typescriptreact': ['prettier'],
+\   'ruby': ['rubocop'],
+\}
+
+
+" Ale will overwrite files with changes
+let g:ale_fix_on_save = 1
+
+let g:ale_typescript_prettier_use_local_config = 1
+
+",i shows Ale detail
+:nmap <leader>i :ALEDetail<CR>
 
 " Always use block cursor
 set guicursor=
@@ -287,6 +321,7 @@ let g:deoplete#sources#ternjs#case_insensitive = 1
 "Add extra filetypes
 let g:deoplete#sources#ternjs#filetypes = [
 \ 'jsx',
+\ 'tsx'
 \ ]
 
 " Use tab to autocomplete deoplete entries
