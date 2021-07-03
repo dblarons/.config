@@ -6,9 +6,6 @@ Plug 'mhartington/nvim-typescript', { 'do': './install.sh' }
 " Typescript highlighting
 Plug 'HerringtonDarkholme/yats.vim'
 
-" Solarized theme
-Plug 'iCyMind/NeoSolarized'
-
 " Autocomplete brackets, braces, and quotes
 Plug 'Raimondi/delimitMate'
 
@@ -23,6 +20,9 @@ Plug 'tpope/vim-speeddating'
 
 " RepeatVim
 Plug 'tpope/vim-repeat'
+
+" Endwise - add 'end' in Ruby
+Plug 'tpope/vim-endwise'
 
 " Javascript syntax
 Plug 'pangloss/vim-javascript'
@@ -39,9 +39,6 @@ Plug 'alvan/vim-closetag'
 " Ag commands (similar to built in grep ones)
 Plug 'rking/ag.vim'
 
-" Ag shortcuts (gagiw searches a word; gagi' searches the words inside single quotes)
-Plug 'Chun-Yang/vim-action-ag'
-
 " Stylus syntax highlighting
 Plug 'wavded/vim-stylus'
 
@@ -50,15 +47,6 @@ Plug 'airblade/vim-gitgutter'
 
 " Fuzzy finder
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
-
-" Autocompletion
-Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
-
-" Javascript plugin for deoplete
-Plug 'carlitux/deoplete-ternjs', { 'do': 'npm install -g tern' }
-
-" Python plugin for deoplete
-Plug 'zchee/deoplete-jedi'
 
 " Ctrl-P (for buffer switching)
 Plug 'ctrlpvim/ctrlp.vim'
@@ -69,22 +57,35 @@ Plug 'SirVer/ultisnips'
 " Use supertab to unify all completers under tab
 Plug 'ervandew/supertab'
 
-" Powerline for Vim
-Plug 'vim-airline/vim-airline'
-
-" Airline themes
-Plug 'vim-airline/vim-airline-themes'
-
 " Nginx syntax highlighting
 Plug 'chr4/nginx.vim'
 
 " OpenSCAD syntax highlighting
 Plug 'sirtaj/vim-openscad'
 
+" Code completion
+" Run `:CocInstall coc-json coc-tsserver` to install extensions.
+Plug 'neoclide/coc.nvim', {'branch': 'release'}
+
+" Python indentation
+Plug 'Vimjas/vim-python-pep8-indent'
+
+" Python syntax highlighting
+Plug 'numirias/semshi', {'do': ':UpdateRemotePlugins'}
+
+" Tokyo Night theme
+Plug 'folke/tokyonight.nvim'
+
+" Treesitter!
+Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
+
+" Status line
+Plug 'hoob3rt/lualine.nvim'
+
 call plug#end()
 
-colorscheme NeoSolarized
-set background=dark
+let g:tokyonight_style = "night"
+colorscheme tokyonight
 
 " Turn off folding by default
 set nofoldenable
@@ -228,6 +229,9 @@ set scrolloff=10
 " Start interactive EasyAlign in visual mode (e.g. vip<Enter>)
 vmap <Enter> <Plug>(EasyAlign)
 
+" Sort selection when ,s is pressed in visual mode.
+vmap <leader>s :sort<CR>
+
 " Start interactive EasyAlign for a motion/text object (e.g. gaip)
 nmap ga <Plug>(EasyAlign))
 
@@ -256,20 +260,6 @@ let g:closetag_filenames = "*.html,*.xhtml,*.xml,*.jsx,*.tsx"
 " Make ag.vim search from the project root instead of working dir
 let g:ag_working_path_mode="r"
 
-" Hacky Gitgutter fix for getting rid of weird solarized highlight column
-highlight clear SignColumn
-call gitgutter#highlight#define_highlights()
-
-fun! <SID>StripTrailingWhitespaces()
-    let l = line(".")
-    let c = col(".")
-    %s/\s\+$//e
-    call cursor(l, c)
-endfun
-
-" Strip trailing whitespace on each save
-autocmd BufWritePre * :call <SID>StripTrailingWhitespaces()
-
 nnoremap <C-p> :FZF<cr>
 
 let g:ale_linter_aliases = {
@@ -288,9 +278,13 @@ let g:ale_fixer_aliases = {
 \}
 
 let g:ale_fixers = {
+\    '*': ['remove_trailing_lines', 'trim_whitespace'],
 \   'typescript': ['prettier'],
 \   'typescriptreact': ['prettier'],
 \   'ruby': ['rubocop'],
+\   'python': ['black'],
+\   'c': ['clang-format'],
+\   'cpp': ['clang-format']
 \}
 
 
@@ -312,18 +306,6 @@ let g:ctrlp_map=''
 " ,b should open Ctrl-P buffer
 nmap <leader>b :CtrlPBuffer<CR>
 
-let g:deoplete#enable_at_startup = 1
-
-" Whether to use a case-insensitive compare between the current word and
-" potential completions. Default 0
-let g:deoplete#sources#ternjs#case_insensitive = 1
-
-"Add extra filetypes
-let g:deoplete#sources#ternjs#filetypes = [
-\ 'jsx',
-\ 'tsx'
-\ ]
-
 " Use tab to autocomplete deoplete entries
 let g:SuperTabDefaultCompletionType = "<c-n>"
 
@@ -336,11 +318,21 @@ let g:UltiSnipsSnippetsDir="~/.config/nvim/UltiSnips"
 let g:UltiSnipsJumpForwardTrigger="<c-f>"
 let g:UltiSnipsJumpBackwardTrigger="<c-b>"
 
-" Use Solarized theme for Airline
-let g:airline_theme='solarized'
-let g:airline_solarized_bg='dark'
-
-" User patched fonts in Airline
-let g:airline_powerline_fonts = 1
-
 let g:pyindent_open_paren = '&sw'
+
+lua <<EOF
+require'nvim-treesitter.configs'.setup {
+  ensure_installed = "maintained", -- one of "all", "maintained" (parsers with maintainers), or a list of languages
+  highlight = {
+    enable = true,              -- false will disable the whole extension
+  },
+}
+
+require('lualine').setup {
+  options = {
+    theme = 'tokyonight',
+    section_separators = '',
+    component_separators = ''
+  },
+}
+EOF
